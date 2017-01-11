@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+    
+    <!-- 
+    	크다 : &gt; 
+   	 	작다 : &lt; 
+    -->
+    
+    <mapper namespace="spring.mvc.board_mybatis.dao.BoardDAO">
+    	<select id="getCount" resultType="int">
+    		SELECT COUNT(*) FROM mvc_board
+    	</select>
+    
+    	<select id="getArticles" parameterType="Map" resultType="spring.mvc.board_mybatis.dto.BoardDTO">
+    		SELECT * 
+    		  FROM (SELECT num, writer, passwd, subject, content, readCnt, ref, ref_step, ref_level, reg_date, ip, rownum rnum      
+                      FROM ( SELECT * FROM mvc_board                                                                       
+                             ORDER BY ref DESC, ref_step ASC )                                                                                               
+                    )                                                                                                       
+             WHERE rnum &gt;= #{start} AND rnum &lt;= #{end}
+    	</select>
+    
+    	<select id="getArticle" parameterType="int" resultType="spring.mvc.board_mybatis.dto.BoardDTO">
+    		SELECT * FROM mvc_board WHERE num = #{num}
+    	</select>
+    	
+    	<update id="addReadCnt" parameterType="int">
+    		UPDATE mvc_board SET readCnt = readCnt+1 WHERE num = #{num}
+    	</update>
+    	
+    	<select id="getMaxNum" resultType="int">
+    		SELECT MAX(num) FROM mvc_board
+    	</select>
+    	
+    	<update id="updateReply" parameterType="spring.mvc.board_mybatis.dto.BoardDTO">
+    		UPDATE mvc_board SET ref_step = ref_step + 1 WHERE ref = #{ref} AND ref_step &gt; #{ref_step}
+    	</update>
+    	
+    	<insert id="insert" parameterType="spring.mvc.board_mybatis.dto.BoardDTO">
+    		INSERT INTO mvc_board(num, writer, passwd, subject, content, readCnt, ref, ref_step, ref_level, reg_date, ip)
+			  VALUES (board_seq.NEXTVAL, #{writer}, #{passwd}, #{subject}, #{content}, #{readCnt}, #{ref}, #{ref_step}, #{ref_level}, #{reg_date} ,#{ip})
+    	</insert>
+    	
+    	<select id="pwdCheck" parameterType="Map" resultType="int">
+    		SELECT COUNT(*) FROM mvc_board WHERE num = #{num} AND passwd = #{passwd}
+    	</select>
+    	
+    	<update id="update" parameterType="spring.mvc.board_mybatis.dto.BoardDTO">
+    		UPDATE mvc_board SET subject=#{subject}, content=#{content}, passwd=#{passwd} WHERE num=#{num}
+    	</update>
+    	
+    	<select id="checkReply" parameterType="spring.mvc.board_mybatis.dto.BoardDTO" resultType="int">
+    		SELECT COUNT(*) FROM mvc_board WHERE ref=#{ref} AND ref_step=#{ref_step}+1 AND ref_level &gt; #{ref_step}
+    	</select>
+    	
+    	<update id="updateRef_step" parameterType="spring.mvc.board_mybatis.dto.BoardDTO">
+    		UPDATE mvc_board SET ref_step = ref_step -1 WHERE ref=#{ref} AND ref_step &gt; #{ref_step}
+    	</update>
+    	
+    	<delete id="delete" parameterType="int">
+    		DELETE FROM mvc_board WHERE num = #{num}
+    	</delete>
+    </mapper>
+    

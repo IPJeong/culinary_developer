@@ -1,0 +1,97 @@
+1. 플젝생성
+SPRING_mvcBoard_MyBatis : SPRING_mvcBoard 플젝 복사해서 가져온다.
+플젝명 > 마오 > properties > web project setting 선택 후 context명 : board_mybatis로 수정
+충돌) 톰캣 마오> Add and Remove 선택 > 충돌 소스들 선택 후 remove 버튼 누른다.
+
+제일 빈번한 에러 : servlet.init() 에러 : jdbc not found.. 톰캣 재설치 후 context.xml에 커넥션풀을 추가안한 경우
+
+2. Spring_mvcBoard 소스를 복사한다.
+	resources > js, css, images 복사
+	views > board > jsp 소스 복사한다.
+	
+	js, css, images 경로수정
+	setting.jsp 수정
+	<c:set var="project" value="/board_mybatis/resources/" />
+	
+2.1	패키지(controller, dao, dto, handler)
+	각각 클래스 복사	
+
+3. 의존설정 : pom.xml에 추가
+   mybatis-spring, srping-jdbc, mybatis 3개 추가
+   
+4. servlet-context.xml에 설정 추가
+	경로 : src -> main -> webapp(기본) -> WEB-INF -> spring -> appServlet
+   dataSource, sqlSessionFactory, sqlSession 추가
+   --> 컨넥션 풀 연결 설정(daoImpl의 dataSource)
+       mapper/*.xml : mapper 폴더에서 dao 작성
+       
+5. mapper 패키지, xml 추가 : BoardMapper
+   New -> Other -> xml file -> BoardMapper.xml
+   
+   <?xml version="1.0" encoding="UTF-8"?>
+   <!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd"> 복사해서 붙여넣는다.
+    
+    또는 http://mybatis.org -> products 선택 > 왼쪽 Mybatis3 -> 링크 docs -> configuration XML -> 중간예제(밑에서부터 올라와서 처음 전체에제 : objectFactory 바로 위)	
+    
+    
+   <!-- Mybatis 설정 시작 -->
+	
+	<!-- 컨넥션 풀 : 서버 : context.xml -->
+	<beans:bean name="dataSource" class="org.springframework.jndi.JndiObjectFactoryBean">
+		<beans:property name="jndiName" value="java:comp/env/jdbc/Oracle11g" />
+		<beans:property name="resourceRef" value="true"></beans:property>
+	</beans:bean>
+	
+	<!-- SqlSessionFactoryBean : 스프링의 FactoryBean 인터페이스를 구현한다. 
+		 SqlSessionFactoryBean을 생성하는 것이 아니라 Factory에서 getXXX() 메서드 호출결과를 반환하는 거을 의미한다.
+		 스프링은 어플리케이션 시작 시점에 SqlSessionFactory를 생성하여 저장한다.
+		 mapperLocations : dao 객체 위치
+	
+	-->
+	<beans:bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<beans:property name="dataSource" ref="dataSource" />
+		<beans:property name="mapperLocations" value="classpath:spring/mvc/member/mapper/*.xml" />
+	</beans:bean>
+	
+	<beans:bean id="sqlSession" class="org.mybatis.spring.SqlSessionTemplate">
+		<beans:constructor-arg index="0" ref="sqlSessionFactory" />
+	</beans:bean> 
+    
+    
+6. Controller 변경
+  1) 각 핸들러는 @Autowired 적용
+  
+ 	@Autowired  // 자동으로 주입
+ 	ConfirmHandler confirmHandler;
+ 	
+ 	주석)
+ 	@Autowired 어노테이션 즉, 자동주입기를 사용하면 xml 설정에 <constructor-age> 태그를 사용하지 않아도 의존 객체가 자동으로 주입됨.
+ 	@Autowired 어노테이션을 이용하면 스프링이 알아서 의존 객체를 찾아서 주입해준다.
+ 	따라서 xml에서 <constructor-arg ref="" /> 이 문장처럼 설정에 의존객체를 명시하지 않아도 필요한 의존 빈 객체를 주입해준다.
+ 
+  2) 핸들러 소스 변경
+ 	@Service("confirmIdHandler") 추가.. 반드시 참조변수명(즉 소문자로 시작)
+ 	Model은 데이터베이스와 관련된 역할을 하며, @Service 어노테이션을 적용한 클래스는 비즈니스 로직이 들어가는 Service로 등록이 된다.
+ 	주의) @Autowired를 했으면 반드시 handler에서 @Service를 해야 한다.
+
+  3) DAO 변경
+  @Repository
+  public class MemberDAOImpl implements MemberDAO{	
+ 	
+ 	@Autowired
+ 	private SqlSession sqlSession;
+ 	
+ 	<!-- Sample -->
+ 	<!-- 중복확인 체크 -->
+	<select id="idCheck" parameterType="String" resultType="int">
+		SELECT COUNT(*) from mvc_Board WHERE id = #{id}
+	</select>	
+ 
+ 7) BoardMapper.xml 작성
+ 	파일의 상단에 붙여줌
+ 	<!DOCTYPE mapper
+    PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+    
