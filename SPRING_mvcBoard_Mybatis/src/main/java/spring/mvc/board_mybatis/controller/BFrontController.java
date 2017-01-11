@@ -25,7 +25,7 @@ public class BFrontController {
 	
 	@Autowired
 	ListHandler listHandler;
-	//리스트 출력
+	
 	@RequestMapping("/list")
 	public String list(HttpServletRequest req, Model model) {
 		model.addAttribute("req", req);
