@@ -9,6 +9,8 @@ import spring.mvc.board_mybatis.dto.BoardDTO;
 
 public interface BoardDAO {
 
+	// 커밋커밋
+	
 	public int getCount();	// 글개수 구하기
 	public int getSearchCount(String item, String keyword);	// 검색된 글개수 구하기
 	public List<BoardDTO> getArticles(Map<String, Integer> map);	// 게시글 목록
