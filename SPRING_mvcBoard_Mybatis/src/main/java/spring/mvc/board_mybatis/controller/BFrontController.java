@@ -7,7 +7,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import spring.mvc.board_mybatis.handler.CommandHandler;
 import spring.mvc.board_mybatis.handler.ContentFormHandler;
 import spring.mvc.board_mybatis.handler.DeleteFormHandler;
 import spring.mvc.board_mybatis.handler.DeleteProHandler;
@@ -26,7 +25,7 @@ public class BFrontController {
 	
 	@Autowired
 	ListHandler listHandler;
-	
+	//리스트 출력
 	@RequestMapping("/list")
 	public String list(HttpServletRequest req, Model model) {
 		model.addAttribute("req", req);
