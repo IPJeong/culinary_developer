@@ -1,4 +1,4 @@
-package com.git.hub;
+package kr.co.gittest;
 
 import java.text.DateFormat;
 import java.util.Date;
